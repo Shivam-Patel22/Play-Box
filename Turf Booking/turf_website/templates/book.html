@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Book Turf - Turf Booking{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="form-container">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('customer_dashboard') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Back</a>
+        <h2 style="font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em;">Book {{ turf.name }}</h2>
+        <p style="color: var(--muted-foreground); font-size: 0.875rem;">{{ turf.location }} • ₹{{ turf.price_per_hour }}/hr</p>
+    </div>
+
+    <div class="card">
+        <form method="POST" action="">
+            <div class="form-group">
+                <label for="booking_date">Select Date</label>
+                <div class="input-icon-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    <select id="booking_date" name="booking_date" required>
+                        <option value="" disabled selected>Select Date</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="start_time">Start Time <span style="color:var(--muted-foreground); font-weight:400;">(6:00 AM – 12:00 AM)</span></label>
+                <div class="input-icon-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <select id="start_time" name="start_time" required>
+                        <option value="" disabled selected>Select Start Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="end_time">End Time</label>
+                <div class="input-icon-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <select id="end_time" name="end_time" required>
+                        <option value="" disabled selected>Select End Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin: 1.5rem 0; padding: 1rem; background-color: var(--accent); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.875rem; font-weight: 500;">Estimated Total</span>
+                <span id="priceDisplay" style="font-size: 1.25rem; font-weight: 700;">₹0.00</span>
+            </div>
+
+            <div style="padding-top: 1rem; border-top: 1px solid var(--border);">
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;" disabled>Confirm Booking (Pay Later)</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<script>
+    (function() {
+        // Generate next 14 days for the date dropdown
+        var dateSelect = document.getElementById('booking_date');
+        var currentDate = new Date();
+        
+        for (var i = 0; i < 14; i++) {
+            var d = new Date(currentDate);
+            d.setDate(currentDate.getDate() + i);
+            
+            var yyyy = d.getFullYear();
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            var dateVal = yyyy + '-' + mm + '-' + dd;
+            
+            var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            var displayString = d.toLocaleDateString(undefined, options);
+            
+            if (i === 0) displayString = "Today (" + displayString + ")";
+            else if (i === 1) displayString = "Tomorrow (" + displayString + ")";
+            
+            var opt = document.createElement('option');
+            opt.value = dateVal;
+            opt.textContent = displayString;
+            dateSelect.appendChild(opt);
+        }
+
+        var pricePerHour = parseFloat('{{ turf.price_per_hour }}');
+        var startInput   = document.getElementById('start_time');
+        var endInput     = document.getElementById('end_time');
+        var priceDisplay = document.getElementById('priceDisplay');
+        var submitBtn    = document.getElementById('submitBtn');
+
+        function generateTimeOptions() {
+            var selectedDate = dateSelect.value;
+            if (!selectedDate) return;
+
+            var now = new Date();
+            var isToday = false;
+            
+            var yyyy = now.getFullYear();
+            var mm = String(now.getMonth() + 1).padStart(2, '0');
+            var dd = String(now.getDate()).padStart(2, '0');
+            if (selectedDate === (yyyy + '-' + mm + '-' + dd)) {
+                isToday = true;
+            }
+
+            var currentHour = now.getHours();
+            var currentMinute = now.getMinutes();
+
+            var prevStart = startInput.value;
+            var prevEnd = endInput.value;
+
+            startInput.innerHTML = '<option value="" disabled selected>Select Start Time</option>';
+            endInput.innerHTML = '<option value="" disabled selected>Select End Time</option>';
+
+            // Turf slots range from 6:00 to 24:00 (12:00 AM next day)
+            for (var hour = 6; hour <= 24; hour++) {
+                var mins = [0, 30];
+                if (hour === 24) mins = [0]; // Max end time is exactly 00:00
+
+                for (var index = 0; index < mins.length; index++) {
+                    var min = mins[index];
+                    
+                    var actualHour = (hour === 24) ? 0 : hour;
+                    var timeValStr = String(actualHour).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+                    
+                    if (isToday) {
+                        // Skip past items
+                        if (hour < currentHour || (hour === currentHour && min <= currentMinute)) {
+                            continue;
+                        }
+                    }
+
+                    var displayH = actualHour > 12 ? actualHour - 12 : (actualHour === 0 ? 12 : actualHour);
+                    var ampm = actualHour < 12 ? 'AM' : 'PM';
+                    var displayStr = String(displayH).padStart(2, '0') + ':' + String(min).padStart(2, '0') + ' ' + ampm;
+                    
+                    // Create Start option - Max start time is 23:30 (so hour < 24)
+                    if (hour < 24) {
+                        var optS = document.createElement('option');
+                        optS.value = timeValStr;
+                        optS.textContent = displayStr;
+                        startInput.appendChild(optS);
+                    }
+                    
+                    // Create End option - Can go up to 24:00 (which is 00:00 of next day)
+                    if (hour > 6 || (hour === 6 && min === 30)) {
+                        var optE = document.createElement('option');
+                        optE.value = timeValStr;
+                        optE.textContent = displayStr;
+                        endInput.appendChild(optE);
+                    }
+                }
+            }
+
+            // Handle empty options case (no slots available today)
+            if (startInput.options.length <= 1) {
+                startInput.innerHTML = '<option value="" disabled selected>No slots available today</option>';
+                endInput.innerHTML = '<option value="" disabled selected>No slots available today</option>';
+            }
+
+            // Restore selection if still valid
+            var isStartValid = Array.from(startInput.options).some(function(o) { return o.value === prevStart; });
+            var isEndValid = Array.from(endInput.options).some(function(o) { return o.value === prevEnd; });
+
+            if (prevStart && isStartValid) startInput.value = prevStart;
+            if (prevEnd && isEndValid) endInput.value = prevEnd;
+            
+            calculate();
+        }
+
+        dateSelect.addEventListener('change', generateTimeOptions);
+
+        function calculate() {
+            var s = startInput.value;
+            var e = endInput.value;
+            if (!s || !e) { priceDisplay.textContent = '₹0.00'; submitBtn.disabled = true; return; }
+
+            var sm = parseInt(s.split(':')[0]) * 60 + parseInt(s.split(':')[1]);
+            var em = parseInt(e.split(':')[0]) * 60 + parseInt(e.split(':')[1]);
+            if (e === "00:00") {
+                em = 24 * 60;
+            }
+            var diff = em - sm;
+
+            if (diff <= 0) {
+                priceDisplay.textContent = 'End must be after start';
+                submitBtn.disabled = true;
+            } else {
+                var total = (diff / 60) * pricePerHour;
+                priceDisplay.textContent = '\u20B9' + total.toFixed(2);
+                submitBtn.disabled = false;
+            }
+        }
+
+        startInput.addEventListener('change', calculate);
+        endInput.addEventListener('change', calculate);
+        
+        // Final Init
+        if(dateSelect.options.length > 1){
+            dateSelect.selectedIndex = 1; // default to today
+            generateTimeOptions();
+        }
+
+    })();
+</script>
+{% endblock %}

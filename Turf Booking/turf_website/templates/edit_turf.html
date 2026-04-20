@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Turf - Turf Booking{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="form-container" style="max-width: 600px;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Back to Dashboard</a>
+        <h2 style="font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em;">Edit Turf Details</h2>
+        <p style="color: var(--muted-foreground); font-size: 0.875rem;">Modify configuration for {{ turf.name }}.</p>
+    </div>
+
+    <div class="card">
+        <form method="POST" action="" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">Turf Name</label>
+                <input type="text" id="name" name="name" required value="{{ turf.name }}">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="sport">Sport Type</label>
+                    <select id="sport" name="sport" required>
+                        <option value="Cricket" {% if turf.sport == 'Cricket' %}selected{% endif %}>Cricket</option>
+                        <option value="Football" {% if turf.sport == 'Football' %}selected{% endif %}>Football</option>
+                        <option value="Pickleball" {% if turf.sport == 'Pickleball' %}selected{% endif %}>Pickleball</option>
+                        <option value="Pool" {% if turf.sport == 'Pool' %}selected{% endif %}>Pool</option>
+                        <option value="Snooker" {% if turf.sport == 'Snooker' %}selected{% endif %}>Snooker</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="area">Area / Zone</label>
+                    <input type="text" id="area" name="area" required value="{{ turf.area }}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Detailed Location</label>
+                <input type="text" id="location" name="location" required value="{{ turf.location }}">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="price_per_hour">Price per Hour (₹)</label>
+                    <input type="number" id="price_per_hour" name="price_per_hour" step="0.01" required value="{{ turf.price_per_hour }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="available_slots">Max Active Slots</label>
+                    <input type="number" id="available_slots" name="available_slots" required value="{{ turf.available_slots }}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" style="width: 100%; padding: 0.5rem; background-color: transparent; border: 1px solid var(--input); border-radius: var(--radius); color: var(--foreground); font-family: var(--font-family);">{{ turf.description }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Turf Image</label>
+                {% if turf.image_path %}
+                <div style="margin-bottom: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; width: 100%; height: 160px;">
+                    <img src="{{ url_for('static', filename=turf.image_path) }}" alt="Current image" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                {% endif %}
+                <label for="image" style="font-size:0.8rem; color:var(--muted-foreground); font-weight:400;">Upload new image to replace (JPG, PNG, WEBP)</label>
+                <input type="file" id="image" name="image" accept="image/*" style="height:auto; padding:0.4rem 0.75rem; cursor:pointer;">
+            </div>
+
+            <div style="padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--border);">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

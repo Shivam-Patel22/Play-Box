@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Turf Booking{% endblock %}
+
+{% block content %}
+<div class="container">
+
+<!-- ── Header ─────────────────────────────────── -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h2 style="font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em;">Welcome, {{ session.get('full_name') }}</h2>
+        <p style="color: var(--muted-foreground);">Manage your turfs and incoming bookings.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <a href="{{ url_for('revenue') }}" class="btn btn-outline" style="border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Analytics</a>
+        <a href="{{ url_for('manage_bookings') }}" class="btn btn-outline" style="border-radius:0; border-left:1px solid var(--border); border-right:1px solid var(--border);">All Bookings</a>
+        <a href="{{ url_for('add_turf') }}" class="btn btn-primary" style="border-top-left-radius:0; border-bottom-left-radius:0;">+ Add Turf</a>
+    </div>
+</div>
+
+<!-- ── Pending Booking Notifications ──────────── -->
+{% if pending_bookings %}
+<div style="margin-bottom: 2.5rem;">
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <h3 style="font-weight:600; font-size:1rem; letter-spacing:-0.01em;">Pending Requests</h3>
+        <span style="background:var(--destructive); color:var(--destructive-foreground); border-radius:9999px; font-size:0.7rem; font-weight:700; padding:0.1rem 0.5rem; line-height:1.6;">
+            {{ pending_bookings | length }}
+        </span>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        {% for b in pending_bookings %}
+        <div style="border:1px solid var(--border); border-left:3px solid var(--foreground); border-radius:var(--radius); padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; background:var(--card); flex-wrap:wrap;">
+            <!-- Info -->
+            <div style="flex:1; min-width:200px;">
+                <div style="font-weight:600; font-size:0.9375rem; margin-bottom:0.2rem;">{{ b.customer_name }}</div>
+                <div style="font-size:0.8rem; color:var(--muted-foreground); display:flex; gap:1.25rem; flex-wrap:wrap;">
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>{{ b.turf_name }}
+                    </span>
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>{{ b.booking_date }}
+                    </span>
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{{ b.start_time }} – {{ b.end_time }}
+                    </span>
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:3px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>{{ b.customer_phone }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Amount -->
+            <div style="font-size:1.125rem; font-weight:700; letter-spacing:-0.02em; flex-shrink:0;">
+                ₹{{ b.total_price | int }}
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex; gap:0.5rem; flex-shrink:0;">
+                <form method="POST" action="{{ url_for('booking_action', booking_id=b.id) }}" style="margin:0;">
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn" style="background:#16a34a; color:#fff; height:2.25rem; padding:0 1rem; font-size:0.8125rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;"><path d="M20 6 9 17l-5-5"/></svg>
+                        Accept
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('booking_action', booking_id=b.id) }}" style="margin:0;">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn btn-destructive" style="height:2.25rem; padding:0 1rem; font-size:0.8125rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        Reject
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div style="margin-bottom:2rem; padding:1rem 1.25rem; border:1px solid var(--border); border-radius:var(--radius); display:flex; align-items:center; gap:0.75rem; color:var(--muted-foreground); background:var(--card); font-size:0.875rem;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+    No pending booking requests right now.
+</div>
+{% endif %}
+
+<!-- ── Turf Grid ────────────────────────────────── -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+    <p style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted-foreground);">Your Managed Turfs</p>
+</div>
+
+<div class="venues-grid">
+    {% for turf in turfs %}
+    <div class="venue-card">
+        <div class="venue-img">
+            <div class="venue-sport-badge">{{ turf.sport }}</div>
+            {% if turf.image_path %}
+            <img src="{{ url_for('static', filename=turf.image_path) }}" alt="{{ turf.name }}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.15;"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>
+            {% endif %}
+        </div>
+        <div class="venue-body">
+            <div class="venue-name">{{ turf.name }}</div>
+            <div class="venue-loc">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ turf.location }}, {{ turf.area }}
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--muted-foreground); padding:0.5rem 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:0.75rem 0;">
+                <span>{{ turf.available_slots }} slots left</span>
+                <span style="font-weight:600; color:var(--foreground);">₹{{ turf.price_per_hour | int }}/hr</span>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <a href="{{ url_for('edit_turf', turf_id=turf.id) }}" class="btn btn-secondary" style="flex:1; text-align:center; font-size:0.8rem; height:2rem; padding:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                    Edit
+                </a>
+                <form method="POST" action="{{ url_for('delete_turf', turf_id=turf.id) }}" style="flex:1; margin:0;">
+                    <button type="submit" class="btn btn-destructive" style="width:100%; font-size:0.8rem; height:2rem; padding:0;"
+                        onclick="return confirm('Delete {{ turf.name }}? This cannot be undone.')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        Delete
+                    </button>
+                </form>
+            </div>
+
+            <!-- Quick Photo Upload -->
+            <form method="POST" action="{{ url_for('upload_turf_photo', turf_id=turf.id) }}" enctype="multipart/form-data"
+                  style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border);">
+                <label style="font-size:0.75rem; color:var(--muted-foreground); font-weight:500; display:block; margin-bottom:0.4rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Turf Photo
+                </label>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="file" name="image" accept="image/*" required
+                           style="flex:1; font-size:0.75rem; color:var(--muted-foreground); padding:0.3rem; border:1px solid var(--border); border-radius:var(--radius); background:transparent; cursor:pointer;">
+                    <button type="submit" class="btn btn-outline" style="height:2rem; padding:0 0.75rem; font-size:0.75rem; flex-shrink:0;">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center; grid-column:1/-1; padding:4rem 2rem; border-style:dashed;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3; margin:0 auto 1rem;"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        <p style="color:var(--muted-foreground); margin-bottom:1rem; font-size:0.9rem;">You haven't added any turfs yet.</p>
+        <a href="{{ url_for('add_turf') }}" class="btn btn-outline">+ Add Your First Turf</a>
+    </div>
+    {% endfor %}
+</div>
+
+</div>
+{% endblock %}

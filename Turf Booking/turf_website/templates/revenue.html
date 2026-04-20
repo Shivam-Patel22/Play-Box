@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Revenue Dashboard - Turf Booking{% endblock %}
+
+{% block content %}
+<div class="container">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h2 style="font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em;">Revenue Dashboard</h2>
+        <p style="color: var(--muted-foreground);">Track your financial performance and total bookings.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="grid" style="margin-bottom: 2rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+        <p style="color: var(--muted-foreground); font-size: 0.875rem; font-weight: 500;">Total Revenue</p>
+        <h2 style="font-size: 2rem; font-weight: 700; letter-spacing: -0.025em; margin-top: 0.25rem;">₹{{ overall_revenue }}</h2>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+        <p style="color: var(--muted-foreground); font-size: 0.875rem; font-weight: 500;">Total Paid Bookings</p>
+        <h2 style="font-size: 2rem; font-weight: 700; letter-spacing: -0.025em; margin-top: 0.25rem;">{{ overall_bookings }}</h2>
+    </div>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr;">
+    <div class="card">
+        <h3 style="font-weight: 600; font-size: 1.125rem; margin-bottom: 1.5rem;">Revenue by Turf</h3>
+        <div style="position: relative; height: 350px; width: 100%;">
+            <canvas id="revenueChart" data-labels='{{ labels | tojson | safe }}' data-values='{{ data | tojson | safe }}'></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Detect current theme colors
+        const style = getComputedStyle(document.body);
+        const textColor = style.getPropertyValue('--foreground').trim();
+        const borderColor = style.getPropertyValue('--border').trim();
+        const primaryColor = document.documentElement.classList.contains('dark-theme') ? '#f8fafc' : '#0f172a';
+        
+        const canvas = document.getElementById('revenueChart');
+        const labels = JSON.parse(canvas.dataset.labels);
+        const data = JSON.parse(canvas.dataset.values);
+        
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Paid (₹)',
+                    data: data,
+                    backgroundColor: primaryColor,
+                    borderRadius: 4,
+                    borderWidth: 0,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: borderColor,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+</div>
+{% endblock %}

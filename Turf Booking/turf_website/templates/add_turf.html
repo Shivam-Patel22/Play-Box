@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Add Turf - Turf Booking{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="form-container" style="max-width: 600px;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Back to Dashboard</a>
+        <h2 style="font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em;">Add New Turf</h2>
+        <p style="color: var(--muted-foreground); font-size: 0.875rem;">Create a new listing for customers to book.</p>
+    </div>
+
+    <div class="card">
+        <form method="POST" action="" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">Turf Name</label>
+                <input type="text" id="name" name="name" required placeholder="e.g. Green Valley Arena">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="sport">Sport Type</label>
+                    <select id="sport" name="sport" required>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Football">Football</option>
+                        <option value="Pickleball">Pickleball</option>
+                        <option value="Pool">Pool</option>
+                        <option value="Snooker">Snooker</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="area">Area / Zone</label>
+                    <input type="text" id="area" name="area" required placeholder="e.g. South Zone">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Detailed Location</label>
+                <input type="text" id="location" name="location" required placeholder="123 Main Street">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="price_per_hour">Price per Hour (₹)</label>
+                    <input type="number" id="price_per_hour" name="price_per_hour" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="available_slots">Max Active Slots</label>
+                    <input type="number" id="available_slots" name="available_slots" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" style="width: 100%; padding: 0.5rem; background-color: transparent; border: 1px solid var(--input); border-radius: var(--radius); color: var(--foreground); font-family: var(--font-family);" placeholder="Describe your turf..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Turf Image <span style="color:var(--muted-foreground); font-weight:400;">(Optional – JPG, PNG, WEBP)</span></label>
+                <input type="file" id="image" name="image" accept="image/*" style="height:auto; padding:0.4rem 0.75rem; cursor:pointer;">
+            </div>
+            
+            <div style="padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--border);">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Publish Turf</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

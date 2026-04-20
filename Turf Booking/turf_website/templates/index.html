@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}PlayBox – Book Sports Turfs Online{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════
+     HERO SECTION
+════════════════════════════════════════════ -->
+<section class="hero-section">
+  <div class="hero-inner">
+    <!-- Left -->
+    <div class="hero-left">
+
+      <h1 class="hero-headline">Book Sports Turfs.<br><span class="hero-accent">Online &amp; Instantly.</span></h1>
+
+      <div class="hero-actions">
+        {% if session.get('user_id') %}
+          {% if session.get('role') == 'Customer' %}
+            <a href="{{ url_for('customer_dashboard') }}" class="btn btn-primary hero-btn">Browse Turfs</a>
+            <a href="{{ url_for('my_bookings') }}" class="btn btn-outline hero-btn">My Bookings</a>
+          {% else %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary hero-btn">Go to Dashboard</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('signup') }}" class="btn btn-primary hero-btn">Find a Turf</a>
+          <a href="#how-it-works" class="btn btn-outline hero-btn">How it Works</a>
+        {% endif %}
+      </div>
+
+    </div>
+
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SEARCH SECTION
+════════════════════════════════════════════ -->
+<section class="search-section">
+  <h2 class="section-title" style="text-align:center; margin-bottom:1.5rem;">Find Sports Turfs Near You</h2>
+  {% if session.get('role') == 'Customer' %}
+  <form action="{{ url_for('customer_dashboard') }}" method="GET" class="search-bar-form">
+  {% elif session.get('role') == 'Admin' %}
+  <form action="{{ url_for('admin_dashboard') }}" method="GET" class="search-bar-form">
+  {% else %}
+  <form action="{{ url_for('login') }}" method="GET" class="search-bar-form">
+  {% endif %}
+    <div class="search-bar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5; flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" name="search" placeholder="Search by turf name, area or sport..." class="search-input">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+  </form>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     POPULAR VENUES
+════════════════════════════════════════════ -->
+<section class="venues-section">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Popular Venues</h2>
+      <p class="section-sub">Highest rated turfs by players</p>
+    </div>
+    <a href="{% if session.get('role') == 'Customer' %}{{ url_for('customer_dashboard') }}{% elif session.get('role') == 'Admin' %}{{ url_for('admin_dashboard') }}{% else %}{{ url_for('login') }}{% endif %}" class="btn btn-outline">View All →</a>
+  </div>
+
+  <div class="venues-grid">
+    {% for turf in popular_turfs %}
+    <div class="venue-card">
+      <div class="venue-img">
+        <div class="venue-sport-badge">{{ turf.sport }}</div>
+        {% if turf.image_path %}
+        <img src="{{ url_for('static', filename=turf.image_path) }}" alt="{{ turf.name }}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
+        {% else %}
+        <div class="venue-placeholder-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.2;"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>
+        </div>
+        {% endif %}
+      </div>
+      <div class="venue-body">
+        <div class="venue-name">{{ turf.name }}</div>
+        <div class="venue-loc">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ turf.location }}
+        </div>
+        <div class="venue-footer">
+          <span class="venue-price">Starting from ₹{{ turf.price_per_hour | int }}<span style="font-weight:400; font-size:0.75rem; color:var(--muted-foreground);">/hr</span></span>
+          {% if session.get('role') == 'Admin' %}
+          <span style="font-size:0.8rem; font-weight:500; color:var(--muted-foreground);">Admin Managed</span>
+          {% elif session.get('role') == 'Customer' %}
+          <a href="{{ url_for('book_turf', turf_id=turf.id) }}" class="btn btn-primary" style="height:2rem; padding:0 0.75rem; font-size:0.8rem;">Book Now</a>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary" style="height:2rem; padding:0 0.75rem; font-size:0.8rem;">Book Now</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--muted-foreground);">No turfs available yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════ -->
+<section class="hiw-section" id="how-it-works">
+  <h2 class="section-title" style="text-align:center;">Book Your Turf in 3 Easy Steps</h2>
+  <p class="section-sub" style="text-align:center; margin-bottom:3rem;">Simple, fast, hassle-free</p>
+  <div class="hiw-grid">
+
+    <div class="hiw-step">
+      <div class="hiw-num">01</div>
+      <div class="hiw-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+      <h3 class="hiw-title">Search &amp; Discover</h3>
+      <p class="hiw-desc">Browse 500+ verified turfs by sport, location, or price. Compare ratings instantly.</p>
+    </div>
+
+    <div class="hiw-connector">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="2" viewBox="0 0 40 2"><line x1="0" y1="1" x2="40" y2="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <div class="hiw-step">
+      <div class="hiw-num">02</div>
+      <div class="hiw-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+      </div>
+      <h3 class="hiw-title">Check Availability</h3>
+      <p class="hiw-desc">Pick your date and time. View real-time slot availability before you commit.</p>
+    </div>
+
+    <div class="hiw-connector">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="2" viewBox="0 0 40 2"><line x1="0" y1="1" x2="40" y2="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <div class="hiw-step">
+      <div class="hiw-num">03</div>
+      <div class="hiw-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      </div>
+      <h3 class="hiw-title">Book &amp; Play</h3>
+      <p class="hiw-desc">Confirm your slot instantly. Show up, play, and repeat. It's that simple.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     BOTTOM CTA
+════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-headline">Ready to Dominate the Field?</h2>
+    <p class="cta-sub">Stop calling venues. Stop waiting. Create an account in 30 seconds and book your first turf right now.</p>
+    <div class="cta-actions">
+      {% if session.get('user_id') %}
+        {% if session.get('role') == 'Customer' %}
+          <a href="{{ url_for('customer_dashboard') }}" class="btn btn-primary cta-btn-main">Browse Turfs</a>
+          <a href="{{ url_for('my_bookings') }}" class="btn btn-outline cta-btn-sec">My Bookings</a>
+        {% else %}
+          <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary cta-btn-main">Admin Dashboard</a>
+          <a href="{{ url_for('revenue') }}" class="btn btn-outline cta-btn-sec">View Analytics</a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('signup') }}" class="btn btn-primary cta-btn-main">Get Started Free</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline cta-btn-sec">Explore Turfs</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <!-- Brand -->
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        PlayBox
+      </div>
+      <p class="footer-about">The easiest way to discover and book premium sports turfs. Book. Play. Repeat.</p>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="footer-col">
+      <h4 class="footer-col-title">Quick Links</h4>
+      <ul class="footer-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        {% if session.get('role') == 'Customer' %}
+        <li><a href="{{ url_for('customer_dashboard') }}">Browse Turfs</a></li>
+        {% elif session.get('role') == 'Admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+        {% else %}
+        <li><a href="{{ url_for('login') }}">Browse Turfs</a></li>
+        {% endif %}
+        <li><a href="#how-it-works">How It Works</a></li>
+        {% if not session.get('user_id') %}
+        <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <!-- Sports -->
+    <div class="footer-col">
+      <h4 class="footer-col-title">Sports</h4>
+      <ul class="footer-links">
+        {% if session.get('role') == 'Customer' %}
+        <li><a href="{{ url_for('customer_dashboard', sport='Cricket') }}">Cricket</a></li>
+        <li><a href="{{ url_for('customer_dashboard', sport='Football') }}">Football</a></li>
+        <li><a href="{{ url_for('customer_dashboard', sport='Pickleball') }}">Pickleball</a></li>
+        <li><a href="{{ url_for('customer_dashboard', sport='Pool') }}">Pool &amp; Snooker</a></li>
+        {% elif session.get('role') == 'Admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}">Cricket</a></li>
+        <li><a href="{{ url_for('admin_dashboard') }}">Football</a></li>
+        <li><a href="{{ url_for('admin_dashboard') }}">Pickleball</a></li>
+        <li><a href="{{ url_for('admin_dashboard') }}">Pool &amp; Snooker</a></li>
+        {% else %}
+        <li><a href="{{ url_for('login') }}">Cricket</a></li>
+        <li><a href="{{ url_for('login') }}">Football</a></li>
+        <li><a href="{{ url_for('login') }}">Pickleball</a></li>
+        <li><a href="{{ url_for('login') }}">Pool &amp; Snooker</a></li>
+        {% endif %}
+      </ul>
+    </div>
+
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 PlayBox. All rights reserved.</span>
+  </div>
+</footer>
+{% endblock %}
