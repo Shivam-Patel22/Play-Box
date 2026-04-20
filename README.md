@@ -6,7 +6,7 @@
 
 **PlayBox:** Your all-in-one platform for seamless sports turf booking and management.
 
-PlayBox (formerly Turf Space) is a robust web application built to connect sports enthusiasts with turf owners. It streamlines the process of discovering, booking, and managing sports venues. Customers can dynamically search for turfs based on location, sport type, and available time slots, while administrators are equipped with a comprehensive dashboard to manage listings, track income, and handle booking requests.
+PlayBox (formerly Turf Space) is a robust web application built to connect sport enthusiasts with turf owners. It streamlines the process of discovering, booking, and managing sports venues. Customers can dynamically search for turfs based on location, sport type, and available time slots, while administrators are equipped with a comprehensive dashboard to manage listings, track income, and handle booking requests.
 
 ## Features
 
